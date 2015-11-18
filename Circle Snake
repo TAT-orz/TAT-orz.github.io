@@ -1,0 +1,167 @@
+<!DOCTYPE html>
+<html>
+<head>
+     <title>Circle Snake_Version 2.1 </title>
+</head>
+<body>
+     <canvas id="canvas" width="400" height="400"></canvas>
+     <script src="https://code.jquery.com/jquery-2.1.0.js"></script>
+<script>
+//Create a canvas
+var canvas = document.getElementById("canvas"); 
+var ctx = canvas.getContext("2d");
+var width = canvas.width; 
+var height = canvas.height;
+var stop = 1;
+//Set up a score which starts from 0
+var score = 0;
+//Set up some parameters to determine the size and position of dot
+var x = width / 2, y = height / 2;
+var r = 4, R = 20;
+var L1 = R / 2 * Math.sqrt(3), L2 = R / 2;
+var Distance = 0, minD = 40 * Math.sin(Math.PI / 12);
+var speed = 120;
+var instructions = ["Press SPACE to change the rotating direction of sanke.","Press Z to pause.","Snake can go out of border but it can't eat its end."]
+//Draw the score
+var drawScore = function (){
+ctx.font = "20px Courier";
+ctx.fillStyle = "White";
+ctx.textAlign = "left";
+ctx.textBaseline = "top";
+ctx.fillText("Score: " + score, 0, 0);
+};
+// Game over
+var gameOver = function (){ clearInterval(intervalId);
+ctx.font = "60px Courier";
+ctx.fillStyle = "White";
+ctx.textAlign = "center";
+ctx.textBaseline = "middle";
+ctx.fillText("Game Over", width / 2, height / 2);
+};
+// draw the border and background
+var drawBorder = function (){
+if (score < 10){ctx.fillStyle = "#ff6565";}
+else if (score < 20){ctx.fillStyle = "#ff751a";}
+else if (score < 30){ctx.fillStyle = "#e5e600";}
+else if (score < 40){ctx.fillStyle = "#65c900";}
+else if (score < 50){ctx.fillStyle = "#00cca4";}
+else if (score < 60){ctx.fillStyle = "#00b8e6";}
+else if (score < 70){ctx.fillStyle = "#9933FF";}
+else{ctx.fillStyle = "#414141";}
+ctx.fillRect(0 ,0 ,width ,height);
+};
+//Set up a constructor of dot
+var Point = function (X, Y){ 
+this.x = X;
+this.y = Y;
+};
+//Fill the small circle
+Point.prototype.draw = function (){
+ctx.fillStyle = "White";
+ctx.beginPath();
+ctx.arc(this.x, this.y, r, 0, Math.PI * 2);
+ctx.fill();
+};
+//comparing two points to confirm whether they meet each other
+Point.prototype.equal = function (){
+this.distance(apple);
+if (Distance <= 2 * r){
+return true;}
+else{
+return false;}
+};
+//Produce an apple randomly
+Point.prototype.move = function (){
+this.x = Math.floor(Math.random()*(width - R * 2)) + R;
+this.y = Math.floor(Math.random()*(height - R * 2)) + R;
+};
+//Calculate the distance between two points
+Point.prototype.distance = function(otherPoint){
+Distance = Math.sqrt(Math.pow(this.x - otherPoint.x, 2) + Math.pow(this.y - otherPoint.y, 2));
+};
+//Set up a constructor of snake which include its track and direction
+var Snake = function (){ 
+this.body = [
+new Point(x, y - R), new Point(x + L2, y - L1), new Point(x + L1, y - L2), 
+new Point(x + R, y), new Point(x + L1, y + L2), new Point(x + L2, y + L1), 
+new Point(x, y + R), new Point(x - L2, y + L1), new Point(x - L1, y + L2), 
+new Point(x - R, y)
+];
+this.direction = 1;
+this.nextDirection = 1;
+};
+//Draw the sanke
+Snake.prototype.draw = function (){
+for(var i = 0; i < this.body.length; i++){
+this.body[i].draw();}
+};
+//Let the snake move in a circle automatically and change its direction
+Snake.prototype.move = function (){
+var head = this.body[0];
+if(this.direction != this.nextDirection){
+for(var i = 0; i < 12; i++){
+track[i].x = head.x * 2 - track[i].x;
+track[i].y = head.y * 2 - track[i].y;}
+for(var i = 1; i < track.length / 2; i++){
+var temp = track[i];
+track[i] = track[track.length - i];
+track[track.length - i] = temp;}
+this.direction = this.nextDirection;}
+if(track[11].x < 0){track[11].x = track[11].x + width}
+else if(track[11].x > width){track[11].x = track[11].x - width}
+if(track[11].y < 0){track[11].y = track[11].y + width}
+else if(track[11].y > width){track[11].y = track[11].y - width}
+var newHead = new Point(track[11].x, track[11].y);
+this.body.unshift(newHead);
+var judge = newHead.equal();
+if(judge){
+score++;
+apple.move();}
+else{this.body.pop();}
+track.unshift(track[11]);
+track.pop();
+};
+//Check whether the snake go out of the border and bite the end
+Snake.prototype.check = function (){
+if(this.body[0].x < 0){this.body[0].x = this.body[0].x + width}
+else if(this.body[0].x > width){this.body[0].x = this.body[0].x - width}
+if(this.body[0].y < 0){this.body[0].y = this.body[0].y + width}
+else if(this.body[0].y > width){this.body[0].y = this.body[0].y - width}
+
+if(this.body.length > 11){
+for(var i = 11; i <= this.body.length - 1; i++)
+{this.body[0].distance(this.body[i]);
+if(Distance <= minD){gameOver();}}}
+};
+// Main programming
+alert("1. "+instructions[0]+"\n"+"2. "+instructions[1]+"\n"+"3. "+instructions[2]);
+
+var snake = new Snake();
+var track = [
+new Point(x, y - R), new Point(x + L2, y - L1), new Point(x + L1, y - L2), 
+new Point(x + R, y), new Point(x + L1, y + L2), new Point(x + L2, y + L1), 
+new Point(x, y + R), new Point(x - L2, y + L1), new Point(x - L1, y + L2), 
+new Point(x - R, y), new Point(x - L1, y - L2), new Point(x - L2, y - L1) 
+];
+var apple = new Point(Math.floor(Math.random()*(width - R * 2)) + R, Math.floor(Math.random()*(height - R * 2)) + R);
+var intervalId = setInterval(function () { 
+if(stop > 0){
+ctx.clearRect(0, 0, width, height); 
+drawBorder();
+apple.draw();
+snake.check();
+snake.move();
+snake.draw();
+drawScore();}
+}, speed);
+
+$("body").keydown(function (event) {
+if(event.keyCode == 32){
+   snake.nextDirection = snake.nextDirection * -1;}
+else if(event.keyCode == 90){
+stop *= -1;}
+});
+
+</script>
+</body>
+</html>
